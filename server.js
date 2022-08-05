@@ -11,7 +11,8 @@ const PORT = process.env.PORT || 3001
 
 app.use(bodyParser.json());
 app.use(cors({
-    credentials: true
+    credentials: true,
+    origin: ['https://pinia-jwt.vercel.app/']
 }));
 app.use(cookieParser())
 
@@ -22,7 +23,7 @@ const db = knex({
         ssl: { rejectUnauthorized: false }
         // host : '127.0.0.1',
         // user : 'postgres',
-        // password : '',
+        // password : 'Adebayo7',
         // database : 'Taste-Element-Database'
     }
 });
