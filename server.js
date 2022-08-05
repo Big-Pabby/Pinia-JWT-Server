@@ -13,12 +13,12 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors({
     credentials: true, 
-    origin: ['http://127.0.0.1:5173', 'http://pinia-jwt.vercel.app']
+    origin: ['http://127.0.0.1:5173', 'http://pinia-jwt.vercel.app/']
 }));
 app.use(function(req, res, next) {
     res.header('Access-Control-Allow-Origin', req.header('origin') );
     next();
-});
+    });
 
 const db = knex({
     client: 'pg',
@@ -51,7 +51,9 @@ app.post('/login', async (req, res) => {
         const token = jwt.sign({_id: user[0].id}, "secret")
         res.cookie('jwt', token, {
             httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000
+            maxAge: 24 * 60 * 60 * 1000,
+            sameSite: 'none',
+            secure: true
         })
 
         res.send({
