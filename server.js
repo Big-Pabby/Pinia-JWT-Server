@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3001
 
 app.use(cors({
     credentials: true, 
-    origin: ['http://127.0.0.1:5173', 'http://pinia-jwt.vercel.app/']
+    origin: ['http://127.0.0.1:5173', 'https://pinia-jwt.vercel.app/']
 }));
 app.use(bodyParser.json());
 app.use(cookieParser());
