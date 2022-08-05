@@ -15,6 +15,10 @@ app.use(cors({
     credentials: true, 
     origin: ['http://127.0.0.1:5173', 'http://pinia-jwt.vercel.app']
 }));
+app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', req.header('origin') );
+    next();
+});
 
 const db = knex({
     client: 'pg',
