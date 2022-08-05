@@ -11,7 +11,10 @@ const PORT = process.env.PORT || 3001
 
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(cors({credentials: true, origin: true}));
+app.use(cors({
+    credentials: true, 
+    origin: ['http://127.0.0.1:5173', 'http://pinia-jwt.vercel.app']
+}));
 
 const db = knex({
     client: 'pg',
