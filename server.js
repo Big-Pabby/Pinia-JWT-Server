@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3001
 
 const corsOptions = {
-    origin: "*",
+    origin: "https://pinia-jwt.vercel.app/",
     credentials: true, 
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
