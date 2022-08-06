@@ -9,10 +9,13 @@ const cookieParser = require('cookie-parser')
 const app = express();
 const PORT = process.env.PORT || 3001
 
-app.use(cors({
+const corsOptions = {
+    origin: 'https://pinia-jwt.vercel.app/',
     credentials: true, 
-    origin: ['http://127.0.0.1:5173', 'https://pinia-jwt.vercel.app/']
-}));
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+
+app.use(cors(corsOptions))
 app.use(bodyParser.json());
 app.use(cookieParser());
 
