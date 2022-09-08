@@ -1,16 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const knex = require('knex');
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3001
 
 const corsOptions = {
-    origin: "https://pinia-jwt.vercel.app",
+    origin: ["http://127.0.0.1:5173", "https://pinia-jwt.vercel.app"],
     credentials: true, 
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
@@ -19,49 +17,53 @@ app.use(cors(corsOptions))
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-
-const db = knex({
-    client: 'pg',
-    connection: {
-        connectionString : process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false }
-        // host : '127.0.0.1',
-        // user : 'postgres',
-        // password : 'Adebayo7',
-        // database : 'Taste-Element-Database'
-    }
-});
+const database = {
+    users: [
+        {
+            id: 1,
+            name: 'Victor',
+            email: 'victoradekunle312@gmail.com',
+            password: 'cookies'
+        },
+        {
+            id: 2,
+            name: 'John',
+            email: 'johndoe@gmail.com',
+            password: 'cookies'
+        },
+    ]
+}
 
 app.post('/login', async (req, res) => {
-        const {email, password} = req.body;
-        const user = await db.select('*').from('users').where('email', '=', email);
-        
-        if(!user) {
-            return res.status(404).send({
-                message: 'user not found'
-            })
-        }
-
-        if(!await bcrypt.compare(password, user[0].hashpassword)) {
-            return res.status(400).send({
-                message: 'invalid credentials'
-            })
-        }
-
-        const token = jwt.sign({_id: user[0].id}, "secret")
-        res.cookie('jwt', token, {
-            httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000,
-            sameSite: 'none',
-            secure: true
+    const {email, password} = req.body;
+    const user = database.users.filter(user => {
+        return user.email === email
+    })
+    if(!user[0]) {
+        return res.status(404).send({
+            message: 'user not found'
         })
+    }
 
-        res.send({
-            message: 'success'
+    if(user[0].password !== password) {
+        return res.status(400).send({
+            message: 'invalid credentials'
         })
+    }
+    const token = jwt.sign({email: user[0].email}, "secret")
+    res.cookie('jwt', token, {
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'none',
+        secure: true
+    })
+
+    res.send({
+        message: 'success'
+    })
 })
 
-app.get('/user', async (req, res) => {
+app.get('/user',(req, res) => {
     try {
         const cookie = req.cookies['jwt']
 
@@ -72,10 +74,11 @@ app.get('/user', async (req, res) => {
                 message: 'unauthenticated'
             })
         }
+        const user = database.users.filter(user => {
+            return user.email === claims.email
+        })
 
-        const user = await db.select('*').from('users').where('id', '=', claims._id);
-
-        const {hashpassword, ...data} = await user[0]
+        const {password, ...data} = user[0]
         res.send(data)
     } catch (e) {
         return res.status(401).send({
@@ -95,24 +98,23 @@ app.post('/logout', async (req, res) => {
     })
 })
 
-app.post('/register', async (req, res) => {
+app.post('/register', (req, res) => {
     try {
         const {name, email, password,} = req.body;
-        const salt = await bcrypt.genSalt()
-        const hashedPassword = await bcrypt.hash(password, salt);
-        console.log(salt)
-        console.log(hashedPassword)
-        await db('users').insert({
-            username: name,
-            email: email,
-            hashpassword: hashedPassword,
-            joined: new Date().toDateString()
-        }).returning('*').then(user => {
-            res.status(200).json("Registration was successful")
-        }).catch(err => {
-            console.log(err)
-            res.status(400).json("Registration failed email already exist")
+        database.users.map(user => {
+            if(user.email !== email) {
+                database.users.push({
+                    id: 3,
+                    name: name,
+                    email: email,
+                    password: password
+                })
+                res.status(200).json(database.users)
+            } else {
+                res.status(400).json("Registration failed email already exist")
+            }
         })
+        
     } catch {
         res.status(500).send()
     }
